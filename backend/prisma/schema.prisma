@@ -1,0 +1,39 @@
+// Generates Prisma Client for database queries
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Connects Prisma to PostgreSQL using the DATABASE_URL from .env
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Stores registered users
+model User {
+  id        Int        @id @default(autoincrement()) // Primary key
+  email     String     @unique                      // Unique user email
+  password  String                                   // Hashed password
+  responses Response[]                              // User's submitted survey responses
+}
+
+// Stores survey questions
+model Question {
+  id          Int        @id @default(autoincrement()) // Primary key
+  title       String                                   // Question title
+  description String?                                  // Optional detailed text
+  type        String // e.g., 'text', 'number', etc.   // Input type
+  category    String                                   // Category grouping (e.g., demographic, health)
+  responses   Response[]                               // Responses linked to this question
+}
+
+// Stores user answers to questions
+model Response {
+  id         Int    @id @default(autoincrement()) // Primary key
+  userId     Int                                   // ID of user who answered
+  questionId Int                                   // ID of related question
+  answer     String                                // Actual answer text/value
+
+  user     User     @relation(fields: [userId], references: [id])       // Link to User
+  question Question @relation(fields: [questionId], references: [id])   // Link to Question
+}
