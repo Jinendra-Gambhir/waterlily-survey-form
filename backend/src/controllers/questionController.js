@@ -1,19 +1,5 @@
-/**
- * questionController.js
- * -----------------------
- * Why: The application needs a way to retrieve survey questions from the database so the frontend can display them.
- * Purpose: Fetches all questions from the database, groups them by category, and returns them in a structured format.
- */
-
  const { PrismaClient } = require("@prisma/client");
  const prisma = new PrismaClient();
- 
- /**
-  * Why: The frontend requires all available questions grouped by category for organized display.
-  * Purpose: Retrieves all unique questions, sorts them by ID, groups them by category, and sends them in JSON format.
-  * @route GET /api/questions
-  * @access Public
-  */
  const getAllQuestions = async (req, res) => {
    try {
      const questions = await prisma.question.findMany({

@@ -1,31 +1,12 @@
-/**
- * responseController.js
- * -----------------------
- * Why: Users need to save, update, and retrieve their survey responses.
- * Purpose: Provides CRUD-like operations (create, replace, upsert) for responses,
- *          ensuring database consistency using Prisma transactions.
- */
-
  const { PrismaClient, Prisma } = require('@prisma/client');
  const prisma = new PrismaClient();
- 
- /**
-  * submitResponses
-  * -----------------------
-  * Why: A user might want to replace all previous answers with a new set.
-  * Purpose: Deletes all of the user’s existing responses and inserts the latest ones from the payload.
-  * @route POST /api/responses
-  * @access Private
-  */
  const submitResponses = async (req, res) => {
-   const userId = req.userId; // Set by authentication middleware
+   const userId = req.userId; 
    const { responses } = req.body;
  
    if (!Array.isArray(responses) || responses.length === 0) {
      return res.status(400).json({ error: "Responses must be a non-empty array." });
    }
- 
-   // Keep only the last provided answer per questionId
    const getres = await prisma.response.findMany({ where: { userId } });
    const latestByQ = new Map();
    for (const r of responses) {
@@ -38,8 +19,6 @@
        questionId,
        answer,
      }));
- 
-     // Transaction: delete all existing responses for user, then insert new set
      await prisma.$transaction(
        [
          prisma.response.deleteMany({ where: { userId } }),
@@ -54,15 +33,6 @@
      return res.status(500).json({ error: "Failed to save responses." });
    }
  };
- 
- /**
-  * getMyResponses
-  * -----------------------
-  * Why: Users should be able to view the answers they previously submitted.
-  * Purpose: Retrieves the logged-in user’s responses along with related question details.
-  * @route GET /api/responses/me
-  * @access Private
-  */
  const getMyResponses = async (req, res) => {
    const userId = req.userId;
    try {
@@ -87,15 +57,6 @@
      res.status(500).json({ error: "Failed to fetch responses." });
    }
  };
- 
- /**
-  * upsertMyResponses
-  * -----------------------
-  * Why: A user might partially update existing answers without replacing all.
-  * Purpose: Updates responses if they already exist; creates them if they don’t — all in one transaction.
-  * @route PUT /api/responses
-  * @access Private
-  */
  const upsertMyResponses = async (req, res) => {
    const userId = req.userId;
    const { responses } = req.body;
@@ -103,8 +64,6 @@
    if (!Array.isArray(responses) || responses.length === 0) {
      return res.status(400).json({ error: "Responses must be a non-empty array." });
    }
- 
-   // Keep only the last answer per questionId
    const latestByQ = new Map();
    for (const r of responses) {
      if (!r || !Number.isInteger(r.questionId)) continue;
@@ -114,14 +73,11 @@
  
    try {
      const result = await prisma.$transaction(async (tx) => {
-       // Find existing questionIds for this user
        const existing = await tx.response.findMany({
          where: { userId, questionId: { in: questionIds } },
          select: { questionId: true },
        });
        const existingSet = new Set(existing.map((e) => e.questionId));
- 
-       // Separate into updates and creates
        const toUpdate = [];
        const toCreate = [];
        for (const qid of questionIds) {
@@ -129,8 +85,7 @@
          if (existingSet.has(qid)) toUpdate.push({ questionId: qid, answer });
          else toCreate.push({ questionId: qid, answer });
        }
- 
-       // Perform updates
+
        const updateOps = toUpdate.map(({ questionId, answer }) =>
          tx.response.updateMany({
            where: { userId, questionId },
@@ -138,7 +93,6 @@
          })
        );
  
-       // Perform creates in bulk
        const createOp = toCreate.length
          ? tx.response.createMany({
              data: toCreate.map(({ questionId, answer }) => ({

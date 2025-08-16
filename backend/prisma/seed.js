@@ -1,21 +1,7 @@
-/**
- * seed.js
- * -----------------------
- * Why: This file is required to populate the database with default survey questions
- *      so the application can function without requiring manual question entry.
- * Purpose: Uses Prisma Client to insert a predefined set of demographic, health,
- *          and financial questions into the `Question` table for initial application setup.
- */
-
  const { PrismaClient } = require('@prisma/client');
  const prisma = new PrismaClient();
  
  async function main() {
-   /**
-    * Why: We need predefined survey questions available in the database
-    *      so users can immediately take the survey after setup.
-    * Purpose: Inserts multiple question records grouped by category.
-    */
    await prisma.question.createMany({
      data: [
        // DEMOGRAPHIC questions
@@ -40,19 +26,14 @@
      ]
    });
  
-   console.log("✅ Questions seeded.");
+   console.log("Questions seeded.");
  }
- 
- /**
-  * Why: This ensures the seeding process is executed and errors are handled.
-  * Purpose: Runs `main()` and safely disconnects the database client regardless of success or failure.
-  */
  main()
    .catch((e) => {
-     console.error("❌ Seed error:", e);
-     process.exit(1); // Exit with failure status
+     console.error("Seed error:", e);
+     process.exit(1);
    })
    .finally(async () => {
-     await prisma.$disconnect(); // Always close DB connection
+     await prisma.$disconnect();
    });
  
