@@ -8,7 +8,9 @@ Build a system to collect demographic, health, and financial data from users thr
 ## Tech Stack
 
 **Backend:** Node.js + Express (lightweight, flexible)
+
 **ORM:** Prisma (type-safe, relational, easy migrations)
+
 **Database:** PostgreSQL (relational structure fits user-question-response model)
 
 Why not Firebase or MongoDB?
