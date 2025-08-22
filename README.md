@@ -44,10 +44,12 @@ Sample Survey Questions
 -	Age
 -	Biological sex
 -	Zip code
+  
 ❤️ Health
 -	Do you have chronic conditions?
 -	Do you use tobacco or alcohol?
 -	Height and weight (for BMI)
+  
 💰 Financial
 -	Monthly income
 -	Monthly expenses
